@@ -7,12 +7,12 @@
         xmlns:local1="clr-namespace:ChangeFileName.ViewModels"
         mc:Ignorable="d"
         FontSize="16"
-        Height="510"
+        Height="543"
         Width="650"
         Title="Utilities tool - CSS VN Team @2025"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
-        d:DesignHeight="510"
+        d:DesignHeight="543"
         d:DesignWidth="650"
         VerticalAlignment="Stretch"
         SizeToContent="Height"
@@ -59,9 +59,25 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style TargetType="{x:Type Border}"
+               x:Key="ShadowBorderStyle">
+            <Setter Property="BorderBrush"
+                    Value="LightGray" />
+            <Setter Property="BorderThickness"
+                    Value="0.9" />
+            <Setter Property="CornerRadius"
+                    Value="10" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="7"
+                                      ShadowDepth="4" />
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
     <TabControl BorderThickness="0"
-                BorderBrush="Transparent">
+                BorderBrush="Transparent"
+                Background="WhiteSmoke">
         <TabItem Header="Utility"
                  Width="100">
             <StackPanel Orientation="Vertical">
@@ -82,11 +98,17 @@
                                     <RowDefinition Height="auto" />
                                     <RowDefinition Height="auto" />
                                 </Grid.RowDefinitions>
-                                <GroupBox Header="Update file name:"
-                                          Grid.Row="0"
-                                          Grid.Column="0"
-                                          Grid.ColumnSpan="3"
-                                          Padding="5">
+                                <Border Grid.Row="0"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Style="{StaticResource ShadowBorderStyle}">
+                                </Border>
+                                <Border Grid.Row="0"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Padding="8"
+                                        Background="White"
+                                        CornerRadius="10">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="auto" />
@@ -99,10 +121,11 @@
                                         </Grid.RowDefinitions>
                                         <Label Grid.Row="0"
                                                Grid.Column="0"
-                                               Content="Input file name" />
+                                               Content="Input file name"
+                                               FontWeight="Bold" />
                                         <TextBox Grid.Column="0"
                                                  Grid.Row="1"
-                                                 Height="30"
+                                                 Height="40"
                                                  Width="410"
                                                  Text="{Binding NewFileName, Mode=TwoWay}" />
                                         <Label Content="Revision"
@@ -122,53 +145,64 @@
                                         <Button Grid.Column="2"
                                                 Grid.Row="1"
                                                 Width="100"
+                                                Height="40"
                                                 Content="Update"
                                                 HorizontalAlignment="Center"
-                                                BorderBrush="Black"
-                                                BorderThickness="0 0 2 2"                     
-                                                Command="{Binding ChangeFileNameCommand}"/>
+                                                Command="{Binding ChangeFileNameCommand}" />
                                     </Grid>
-                                </GroupBox>
-                                <GroupBox Grid.Row="1"
-                                          Grid.Column="0"
-                                          Grid.ColumnSpan="3"
-                                          Header="Convert text to UPPER:"
-                                          Padding="5">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="auto" />
-                                            <ColumnDefinition Width="auto" />
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="auto" />
-                                            <RowDefinition Height="auto" />
-                                        </Grid.RowDefinitions>
+                                </Border>
+                                <Border Grid.Row="1"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Margin="0 10 0 0"
+                                        Style="{StaticResource ShadowBorderStyle}">
+                                </Border>
+                                <Border Grid.Row="1"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Padding="10"
+                                        Background="White"
+                                        CornerRadius="10"
+                                        Margin="0 10 0 0">
+                                    <StackPanel>
                                         <Label Grid.Column="0"
                                                Grid.Row="0"
-                                               Content="Input text to convert:" />
+                                               Content="Input text to convert:"
+                                               FontWeight="Bold" />
                                         <TextBox Grid.Column="0"
                                                  Grid.Row="1"
                                                  Height="30"
                                                  Grid.ColumnSpan="3"
                                                  Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        <Label Grid.Column="0"
+                                               Grid.Row="0"
+                                               Content="Result:"
+                                               FontWeight="Bold" />
                                         <TextBox Grid.Column="0"
                                                  Grid.Row="5"
                                                  Height="30"
-                                                 Margin="0 10 0 0"
                                                  Grid.ColumnSpan="3"
                                                  Text="{Binding InputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource UpperCaseConverter}}"
                                                  IsReadOnly="True"
-                                                 Foreground="Green" />
+                                                 Foreground="Green"
+                                                 Margin="0 0 0 10" />
 
-                                    </Grid>
-                                </GroupBox>
-                                <GroupBox Header="Upload files to S:\... drive"
-                                          Grid.Row="2"
-                                          Grid.Column="0"
-                                          Grid.ColumnSpan="3"
-                                          Padding="5">
+
+                                    </StackPanel>
+                                </Border>
+                                <Border Grid.Row="2"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Margin="0 15 0 0"
+                                        Style="{StaticResource ShadowBorderStyle}">
+                                </Border>
+                                <Border Grid.Row="2"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="3"
+                                        Padding="5"
+                                        Background="White"
+                                        CornerRadius="10"
+                                        Margin="0 12 0 0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="3*" />
@@ -182,34 +216,36 @@
                                             <RowDefinition Height="auto" />
                                             <RowDefinition Height="auto" />
                                         </Grid.RowDefinitions>
-
+                                        <Label Grid.Row="0"
+                                               Grid.Column="0"
+                                               Grid.ColumnSpan="3"
+                                               Content="Upload file from:"
+                                               FontWeight="Bold" />
                                         <Label Grid.Row="1"
                                                Grid.Column="0"
                                                Grid.ColumnSpan="3"
-                                               Height="35"
+                                               Height="30"
                                                Content="{Binding CurrentLocalFilePath}"
                                                Foreground="Blue"
-                                               BorderBrush="Black"
+                                               BorderBrush="SlateGray"
                                                BorderThickness="1" />
                                         <Button Grid.Row="3"
                                                 Grid.Column="0"
                                                 Width="100"
-                                                Height="30"
+                                                Height="40"
                                                 HorizontalAlignment="Right"
                                                 Content="Get current"
-                                                BorderBrush="Black"
-                                                BorderThickness="0 0 2 2"
                                                 Background="LightGray"
                                                 Foreground="Black"
                                                 Command="{Binding GetCurrentLocalFileDwgCommand}" />
                                         <Label Grid.Row="2"
                                                Grid.Column="0"
                                                Grid.ColumnSpan="3"
-                                               Height="35"
-                                               Margin="0 0 0 15"
+                                               Height="30"
+                                               Margin="0 10 0 15"
                                                Content="{Binding SDriveCompanyPath}"
                                                Foreground="Blue"
-                                               BorderBrush="Black"
+                                               BorderBrush="SlateGray"
                                                BorderThickness="1" />
                                         <Button Grid.Row="3"
                                                 Grid.Column="1"
@@ -219,15 +255,12 @@
                                                 Background="LightGray"
                                                 Foreground="Black"
                                                 HorizontalAlignment="Right"
-                                                BorderBrush="Black"
-                                                BorderThickness="0 0 2 2"
                                                 Command="{Binding GetSDriveProjectFolderCommand}" />
                                         <Button Grid.Row="3"
                                                 Grid.Column="2"
                                                 Width="100"
+                                                Height="40"
                                                 Content="Push"
-                                                BorderBrush="Black"
-                                                BorderThickness="0 0 2 2"
                                                 Command="{Binding PushFileToSDriveCommand}" />
                                         <Expander Grid.Row="4"
                                                   Margin="0 10 0 0"
@@ -242,7 +275,7 @@
                                             </ListView>
                                         </Expander>
                                     </Grid>
-                                </GroupBox>
+                                </Border>
                             </Grid>
                         </StackPanel>
                     </Grid>
@@ -256,8 +289,11 @@
                         <RowDefinition Height="auto" />
                         <RowDefinition />
                     </Grid.RowDefinitions>
-                    <GroupBox Grid.Row="0"
-                              Header="Create Text Style/ Dimension Style/Mleader Style/ Scale Viewport">
+                    <Border Grid.Row="0"
+                            Style="{StaticResource ShadowBorderStyle}" />
+                    <Border Grid.Row="0"
+                            Background="White"
+                            CornerRadius="10">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="auto" />
@@ -281,10 +317,11 @@
                                      x:Name="txtStyleName" />
                             <Button Grid.Row="0"
                                     Grid.Column="2"
-                                    Content="Create alls"
-                                    Width="185"
+                                    Content="Create"
+                                    Width="100"
+                                    Height="35"
                                     Command="{Binding CreatAllCommands}"
-                                    Margin="0 20 0 0" />
+                                    Margin="-90 20 0 0" />
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="3"
@@ -302,7 +339,7 @@
                                     Visibility="Collapsed" />
 
                         </Grid>
-                    </GroupBox>
+                    </Border>
                     <StackPanel Grid.Row="1">
                         <Label Content="{Binding StatusCreateTextStyle}"
                                Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
@@ -317,19 +354,115 @@
             </Border>
         </TabItem>
         <TabItem Header="Extract Block">
-            <Grid>
-                <StackPanel>
-                    <TextBox Width="200"
-                             Text="{Binding BlockName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    <Button Width="100"
-                            Height="40"
-                            Content="Extract block"
-                            Command="{Binding ExtractBlockCommand}"></Button>
-                </StackPanel>
+            <Border Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="0"
+                           Content="Extract AutoCAD Block"
+                           FontSize="26"
+                           FontWeight="Bold" />
+                    <Label Grid.Row="1"
+                           Content="Extract multiple block to separate files" />
+                    <Separator Grid.Row="1"
+                               Margin="0 35 0 0"
+                               Background="LightGray" />
+                    <Border Grid.Row="2"
+                            Margin="0 15 0 0"
+                            Style="{StaticResource ShadowBorderStyle}" />
+                    <Border Grid.Row="2"
+                            Background="White"
+                            CornerRadius="10"
+                            Padding="15"
+                            Margin="0 15 0 0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2.3*" />
+                                <ColumnDefinition Width="2*" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <TextBox Grid.Row="0"
+                                     Grid.Column="0"
+                                     Width="200"
+                                     HorizontalAlignment="Left"
+                                     Text="{Binding BlockNameStartWith, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button Grid.Row="0"
+                                    Grid.Column="1"
+                                    Content="Load"
+                                    Width="100"
+                                    Height="40"
+                                    HorizontalAlignment="Left"
+                                    Command="{Binding CountBlockCommand}" />
+                            <CheckBox Grid.Column="2"
+                                      Content="Check all"
+                                      VerticalAlignment="Center" 
+                                      VerticalContentAlignment="Center"/>
+                            <CheckBox Grid.Column="3"
+                                      Content="UnCheck"
+                                      VerticalAlignment="Center"
+                                      VerticalContentAlignment="Center" />
+                            <ListBox Grid.Row="1"
+                                     Grid.ColumnSpan="4"
+                                     Margin="0 10 0 0"
+                                     Height="200"
+                                     ItemsSource="{Binding ListDetailItemTest}"
+                                     ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsSelected}"
+                                                      Margin="5 0" VerticalContentAlignment="Center"/>
+                                            <TextBlock Text="{Binding BlockNameTest}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                    
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </Grid>
 
-            </Grid>
+                    </Border>
+                    <Border Grid.Row="3"
+                            Margin="0 15 0 0"
+                            Style="{StaticResource ShadowBorderStyle}">
+                    </Border>
+                    <Border Grid.Row="3"
+                            Margin="0 15 0 0"
+                            Background="White"
+                            CornerRadius="10"
+                            Padding="15">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Left">
+                                <ComboBox Width="200" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Center">
+                                <Label Content="{Binding TotalNumberOfBlock}"
+                                       Foreground="Green" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal"
+                                        HorizontalAlignment="Right">
+                                <Button Content="Extract"
+                                        Width="100"
+                                        Height="40" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
 
+            </Border>
         </TabItem>
     </TabControl>
 
 </Window>
+                    

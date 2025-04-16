@@ -35,6 +35,7 @@ namespace ChangeFileName.ViewModels
         public ICommand CreatAllCommands { get; }
         public ICommand ExtractBlockCommand { get; }
         public ICommand InsertBlockCommand { get; }
+        public ICommand CountBlockCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
@@ -323,6 +324,49 @@ namespace ChangeFileName.ViewModels
             get { return _blockName; }
             set { _blockName = value; OnPropertyChanged(nameof(BlockName)); }
         }
+        //Load list to listview
+        private string _blockNameTest;
+        public string BlockNameTest
+        {
+            get { return _blockNameTest; }
+            set { _blockNameTest = value; OnPropertyChanged(nameof(BlockNameTest)); }
+        }
+
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set { _isSelected = value; OnPropertyChanged(nameof(IsSelected)); }
+        }
+        public ObservableCollection<ChangeFileNameViewModel> ListDetailItemTest { get; set; }
+        public ChangeFileNameViewModel(string blockNameTest)
+        {
+            BlockNameTest = blockNameTest;
+            _isSelected = false; // Default state
+        }
+
+        private ObservableCollection<string> _detailItem;
+
+        public ObservableCollection<string> ListDetailItem
+        {
+            get { return _detailItem; }
+            set { _detailItem = value; OnPropertyChanged(nameof(ListDetailItem)); }
+        }
+
+        private string _totalNumberOfBlock;
+
+        public string TotalNumberOfBlock
+        {
+            get { return _totalNumberOfBlock; }
+            set { _totalNumberOfBlock = value; OnPropertyChanged(nameof(TotalNumberOfBlock)); }
+        }
+        private string _blockNameStartWith;
+
+        public string BlockNameStartWith
+        {
+            get { return _blockNameStartWith; }
+            set { _blockNameStartWith = value; OnPropertyChanged(nameof(BlockNameStartWith)); }
+        }
 
         #endregion
         //Constructor
@@ -352,7 +396,9 @@ namespace ChangeFileName.ViewModels
             CreateMultileaderCommand = new RelayCommand(CreateNewMultileader);
             ExtractBlockCommand = new RelayCommand(ExtractBlockToFile);
             //InsertBlockCommand = new RelayCommand(InsertABlockName);
+            CountBlockCommand = new RelayCommand(CountBlock);
         }
+
         //Method
         private void ChangeShopDrawingFile()
         {
@@ -623,7 +669,7 @@ namespace ChangeFileName.ViewModels
                 StatusCreateDimStyle = DimStyleFail;
                 return;
             }
-        }
+        }   
         private void CreateNewMultileader()
         {
             Document doc = UtilMethod.AcadDoc();
@@ -818,6 +864,8 @@ namespace ChangeFileName.ViewModels
         }
         private void ExtractBlockToFile(ObjectId blockDefId, string destinationFilePath, string blockName)
         {
+            string dwgVersion = string.Empty;
+            //dwgVersion = DwgVersion.Unknown;
             using (Database destDb = new Database(true, false))
             {
                 ObjectIdCollection idCollection = new ObjectIdCollection { blockDefId };
@@ -870,6 +918,62 @@ namespace ChangeFileName.ViewModels
             }
             //doc.Zoom(new Point3d(), new Point3d(), new Point3d(), 1.01075);
 
+        }
+        private void CountBlock()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+            Editor ed = UtilMethod.AcadEd();
+            try
+            {
+                using (var tr = db.TransactionManager.StartOpenCloseTransaction())
+                {
+                    //ListDetailItem = new ObservableCollection<string>();
+                    if (ListDetailItemTest != null)
+                    {
+                        ListDetailItemTest.Clear();
+                        TotalNumberOfBlock = string.Empty;
+                    }
+                    else
+                    {
+                        ListDetailItemTest = new ObservableCollection<ChangeFileNameViewModel>();
+                    }
+                    //ListDetailItemTest = new ObservableCollection<ChangeFileNameViewModel>();
+                    var modelSpace = (BlockTableRecord)tr.GetObject(
+                        SymbolUtilityServices.GetBlockModelSpaceId(db), OpenMode.ForRead);
+
+                    var brclass = Autodesk.AutoCAD.Runtime.RXObject.GetClass(typeof(BlockReference));
+
+                    var blocks = modelSpace
+                        .Cast<ObjectId>()
+                        .Where(id => id.ObjectClass == brclass)
+                        .Select(id => (BlockReference)tr.GetObject(id, OpenMode.ForRead))
+                        .GroupBy(br => ((BlockTableRecord)tr.GetObject(
+                            br.DynamicBlockTableRecord, OpenMode.ForRead)).Name);
+
+                    int totalBlockCount = 0;
+                    foreach (var group in blocks)
+                    {
+                        if (group.Key.ToString() != "Model" && !group.Key.StartsWith("*Layout") && group.Key.StartsWith(BlockNameStartWith))
+                        {
+                            //ListDetailItem.Add(group.Key.ToString());
+                            //totalBlockCount += group.Count();
+                            //ed.WriteMessage($"\n{group.Key}: {group.Count()}");
+                            ListDetailItemTest.Add(new ChangeFileNameViewModel(group.Key.ToString()));
+                            totalBlockCount += group.Count();
+                            ed.WriteMessage($"\n{group.Key}: {group.Count()}");
+                        }
+                    }
+                    TotalNumberOfBlock = $"There are total: {totalBlockCount} Block{(totalBlockCount > 1 ? "s" : "")}";
+                    tr.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                UtilMethod.WarningMessageBox($"Error {ex.Message}", "Error");
+                return;
+            }
+           
         }
     }
 
