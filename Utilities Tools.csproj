@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands.cs" />
+    <Compile Include="Models\BlockListItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\UtilMethod.cs" />
     <Compile Include="ViewModels\BooleanToVisibilityConverter.cs" />

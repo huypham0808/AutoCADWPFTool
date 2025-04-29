@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Linq;
 using Autodesk.AutoCAD.Geometry;
-
+using UtilitiesTool_V4.Models;
 namespace ChangeFileName.ViewModels
 {
     public class ChangeFileNameViewModel : INotifyPropertyChanged
@@ -336,13 +336,25 @@ namespace ChangeFileName.ViewModels
         public bool IsSelected
         {
             get { return _isSelected; }
-            set { _isSelected = value; OnPropertyChanged(nameof(IsSelected)); }
+            set 
+            {   _isSelected = value; 
+                OnPropertyChanged(nameof(IsSelected));
+            }
         }
-        public ObservableCollection<ChangeFileNameViewModel> ListDetailItemTest { get; set; }
+        private ObservableCollection<ChangeFileNameViewModel> _listDetailItemTest { get; set; }
+        public ObservableCollection<ChangeFileNameViewModel> ListDetailItemTest
+        {
+            get { return _listDetailItemTest; }
+            set
+            {
+                _listDetailItemTest = value;
+                OnPropertyChanged(nameof(ListDetailItemTest));
+            }
+        }
         public ChangeFileNameViewModel(string blockNameTest)
         {
             BlockNameTest = blockNameTest;
-            _isSelected = false; // Default state
+            IsSelected = false; // Default state
         }
 
         private ObservableCollection<string> _detailItem;
@@ -819,7 +831,8 @@ namespace ChangeFileName.ViewModels
                         BlockTableRecord modelSpace = (BlockTableRecord)tr.GetObject(bt[BlockTableRecord.ModelSpace], OpenMode.ForRead);
 
                         int extractedCount = 0;
-                        
+                        //System.Collections.IList seletedBlockNames = ListDetailItemTest;
+                        List<string> selectedBlockNamesms = ListDetailItemTest.Where(item => item.IsSelected == true).Select(item => item.BlockNameTest).ToList(); ;
                         // Duyệt qua tất cả các đối tượng trong Model Space
                         foreach (ObjectId objId in modelSpace)
                         {
@@ -829,28 +842,28 @@ namespace ChangeFileName.ViewModels
                                 BlockReference blkRef = (BlockReference)ent;
                                 ObjectId blockDefId = blkRef.BlockTableRecord;
                                 BlockTableRecord blkRec = (BlockTableRecord)tr.GetObject(blockDefId, OpenMode.ForRead);
-                                
 
                                 // Kiểm tra nếu đây không phải là block động và không phải là block layout hoặc annotation
                                 if (!blkRec.IsDynamicBlock && !blkRec.IsLayout && !blkRec.IsAnonymous)
                                 {
-                                    string blockName = blkRec.Name;
-                                    string saveFilePath = Path.Combine(saveFolderPath, $"{blockName}.dwg");
-
-                                    if (!File.Exists(saveFilePath)) // Tránh ghi đè nếu file đã tồn tại
+                                    BlockNameTest = blkRec.Name;
+                                    string saveFilePath = Path.Combine(saveFolderPath, $"{BlockNameTest}.dwg");
+                                    if (BlockNameTest == selectedBlockNamesms.Contains(BlockNameTest).ToString())
                                     {
-                                        ExtractBlockToFile(blockDefId, saveFilePath, blockName);
-                                        extractedCount++;
-                                    }
-                                    else
-                                    {
-                                        ed.WriteMessage($"\nĐã bỏ qua block '{blockName}' vì file '{saveFilePath}' đã tồn tại.");
+                                        if (!File.Exists(saveFilePath)) // Tránh ghi đè nếu file đã tồn tại
+                                        {
+                                            ExtractBlockToFile(blockDefId, saveFilePath, BlockNameTest);
+                                            extractedCount++;
+                                        }
+                                        else
+                                        {
+                                            ed.WriteMessage($"\nĐã bỏ qua block '{BlockNameTest}' vì file '{saveFilePath}' đã tồn tại.");
+                                        } 
                                     }
                                 }
                             }
 
                         }
-
                         tr.Commit();
                         ed.WriteMessage($"\nĐã trích xuất thành công {extractedCount} block thành các file .dwg riêng lẻ trong thư mục '{saveFolderPath}'.");
                     }
@@ -972,8 +985,18 @@ namespace ChangeFileName.ViewModels
             {
                 UtilMethod.WarningMessageBox($"Error {ex.Message}", "Error");
                 return;
+            }          
+        }
+        private void SeletedDetail()
+        {
+            if (IsSelected == true && BlockNameTest != null)
+            {
+                ListDetailItem.Add(BlockNameTest);
             }
-           
+            else if (IsSelected == false && BlockNameTest != null && ListDetailItem.Contains(BlockNameTest))
+            {
+                ListDetailItem.Remove(BlockNameTest);
+            }
         }
     }
 

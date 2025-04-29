@@ -15,7 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using ChangeFileName.ViewModels;
 using ChangeFileName.Utilities;
-
+using ChangeFileName.Views;
 namespace ChangeFileName.Views
 {
     /// <summary>
@@ -83,6 +83,11 @@ namespace ChangeFileName.Views
             {
                 txtStyleName.Text = "";
             }
+        }
+
+        private void chkBoxDetail_Checked(object sender, RoutedEventArgs e)
+        {
+            
         }
     }
 }
