@@ -63,7 +63,7 @@ namespace ChangeFileName.Views
                                 writer.WriteLine(item);
                             }
                         }
-                    }                                
+                    }                             
                 }
                 return;
             }

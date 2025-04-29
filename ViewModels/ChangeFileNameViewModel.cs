@@ -406,7 +406,7 @@ namespace ChangeFileName.ViewModels
 
             string activeDate = DateTime.Now.ToString("yyyy.MM.dd");
             string projectName = string.IsNullOrEmpty(NewFileName) ? "Project name" : NewFileName;
-            string newFileName = activeDate + "-" + projectName + "-" + "FRP Shop Drawings" + "-" + "Rev." + RevisionNumber + ".dwg";
+            string newFileName = activeDate + "-" + projectName + "-" + "-" + "Rev." + RevisionNumber + ".dwg";
             try
             {
                 // Get the current document name
