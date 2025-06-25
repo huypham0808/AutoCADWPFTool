@@ -89,5 +89,12 @@ namespace ChangeFileName.Views
         {
             
         }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            this.Topmost = true;
+            this.Height = 650;
+            this.Width = 543;
+        }
     }
 }

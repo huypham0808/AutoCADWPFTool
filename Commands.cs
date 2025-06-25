@@ -8,7 +8,7 @@ namespace ChangeFileName
 {
     public class Commands
     {
-        [CommandMethod("CSS_UtilitiesTool_Beta", CommandFlags.Modal)]
+        [CommandMethod("CSS_UtilitiesTool", CommandFlags.Modal)]
         public void CallForm()
         {
             ChangeFileNameViewModel vM = new ChangeFileNameViewModel();
@@ -17,7 +17,7 @@ namespace ChangeFileName
             {
                 DataContext = vM
             };
-            AcAp.ShowModelessWindow(fileNameWindow);
+           AcAp.ShowModalWindow(fileNameWindow);
         }
     }
 }

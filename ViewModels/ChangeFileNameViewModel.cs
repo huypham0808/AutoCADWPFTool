@@ -18,6 +18,10 @@ using System.Xml.Serialization;
 using System.Linq;
 using Autodesk.AutoCAD.Geometry;
 using UtilitiesTool_V4.Models;
+using System.Threading.Tasks;
+using UtilitiesTool_V4.ViewModels;
+using System.Diagnostics;
+
 namespace ChangeFileName.ViewModels
 {
     public class ChangeFileNameViewModel : INotifyPropertyChanged
@@ -36,6 +40,7 @@ namespace ChangeFileName.ViewModels
         public ICommand ExtractBlockCommand { get; }
         public ICommand InsertBlockCommand { get; }
         public ICommand CountBlockCommand { get; }
+        public ICommand CreateAllStyleCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string propertyName)
@@ -106,7 +111,7 @@ namespace ChangeFileName.ViewModels
             {
                 if (ResultText == "Text will be converted to UPPER here!" || StatusCreateTextStyle == TextStyleFail || StatusCreateDimStyle == DimStyleFail)
                 {
-                    _colorTextOriginal = Brushes.Blue;
+                    _colorTextOriginal = Brushes.White;
                 }
                 else
                 {
@@ -235,7 +240,6 @@ namespace ChangeFileName.ViewModels
             }
         }
         private string _statusCreateTextStyle;
-
         public string StatusCreateTextStyle
         {
             get { return _statusCreateTextStyle; }
@@ -245,15 +249,15 @@ namespace ChangeFileName.ViewModels
                 OnPropertyChanged(nameof(StatusCreateTextStyle));
             }
         }
-        private string _statusCreateDimStyle;
 
+        private string _statusCreateDimStyle;
         public string StatusCreateDimStyle
         {
             get { return _statusCreateDimStyle; }
             set { _statusCreateDimStyle = value; OnPropertyChanged(nameof(StatusCreateDimStyle)); }
         }
-        private string _statusCreateScaleVP;
 
+        private string _statusCreateScaleVP;
         public string StatusCreateScaleVP
         {
             get { return _statusCreateScaleVP; }
@@ -317,6 +321,16 @@ namespace ChangeFileName.ViewModels
             get { return _multileaderFail; }
             set { _multileaderFail = value; OnPropertyChanged(nameof(MultileaderFail)); }
         }
+
+        private string _creationStatus;
+
+        public string CreationStatus
+        {
+            get { return _creationStatus; }
+            set { _creationStatus = value; OnPropertyChanged(nameof(CreationStatus)); }
+        }
+
+
         private string _blockName;
 
         public string BlockName
@@ -336,8 +350,9 @@ namespace ChangeFileName.ViewModels
         public bool IsSelected
         {
             get { return _isSelected; }
-            set 
-            {   _isSelected = value; 
+            set
+            {
+                _isSelected = value;
                 OnPropertyChanged(nameof(IsSelected));
             }
         }
@@ -382,6 +397,7 @@ namespace ChangeFileName.ViewModels
 
         #endregion
         //Constructor
+        #region Constructor
         public ChangeFileNameViewModel()
         {
             RevisionNumber = "0";
@@ -397,20 +413,22 @@ namespace ChangeFileName.ViewModels
             IsExpandedHistoryPath = false;
             FilePathToListView = new ObservableCollection<string>();
             SaveDataToTextFileCommand = new RelayCommand(SaveListViewDataToXml);
-            CreateTextStyleCommand = new RelayCommand(CreateNewTextStyle);
-            CreateDimStyleCommand = new RelayCommand(CreateNewDimStyle);
-            CreateMultileaderCommand = new RelayCommand(CreateNewMultileader);
+            //CreateTextStyleCommand = new RelayCommand(CreateNewTextStyle);
+            //CreateDimStyleCommand = new RelayCommand(CreateNewDimStyle);
+            //CreateMultileaderCommand = new RelayCommand(CreateNewMultileader);
             LoadDataFromXmlFile();
             StatusCreateTextStyle = "None!";
             StatusCreateDimStyle = "None!";
             StatusCreateScaleVP = "None!";
-            CreatAllCommands = new RelayCommand(CreateAlls);
-            CreateMultileaderCommand = new RelayCommand(CreateNewMultileader);
+            CreationStatus = "None!";
+            //CreatAllCommands = new RelayCommand(CreateAlls);
+            //CreateMultileaderCommand = new RelayCommand(CreateNewMultileader);
             ExtractBlockCommand = new RelayCommand(ExtractBlockToFile);
             //InsertBlockCommand = new RelayCommand(InsertABlockName);
             CountBlockCommand = new RelayCommand(CountBlock);
+            CreateAllStyleCommand = new AsyncRelayCommand(CreateAlls);
         }
-
+        #endregion
         //Method
         private void ChangeShopDrawingFile()
         {
@@ -418,7 +436,7 @@ namespace ChangeFileName.ViewModels
 
             string activeDate = DateTime.Now.ToString("yyyy.MM.dd");
             string projectName = string.IsNullOrEmpty(NewFileName) ? "Project name" : NewFileName;
-            string newFileName = activeDate + "-" + projectName + "-" + "-" + "Rev." + RevisionNumber + ".dwg";
+            string newFileName = activeDate + "-" + projectName + "- FRP Shop Drawings" + "-" + "Rev." + RevisionNumber + ".dwg";
             try
             {
                 // Get the current document name
@@ -469,35 +487,43 @@ namespace ChangeFileName.ViewModels
         }
         private void GetSDriveProjectPath()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
+            if (string.IsNullOrEmpty(SDriveCompanyPath))
             {
-                Title = "Select project folder",
-                CheckFileExists = false,
-                FileName = "Select Folder",
-
-                ValidateNames = false,
-                CheckPathExists = true,
-                Filter = "Folders|no.files"
-            };
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                string folderSDrivePath = Path.GetDirectoryName(openFileDialog.FileName);
-                SDriveCompanyPath = folderSDrivePath;
-
-                if (FilePathToListView.Count < 3)
+                OpenFileDialog openFileDialog = new OpenFileDialog
                 {
-                    FilePathToListView.Add(SDriveCompanyPath);
+                    Title = "Select project folder",
+                    CheckFileExists = false,
+                    FileName = "Select Folder",
+
+                    ValidateNames = false,
+                    CheckPathExists = true,
+                    Filter = "Folders|no.files"
+                };
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string folderSDrivePath = Path.GetDirectoryName(openFileDialog.FileName);
+                    SDriveCompanyPath = folderSDrivePath;
+
+                    if (FilePathToListView.Count < 3)
+                    {
+                        FilePathToListView.Add(SDriveCompanyPath);
+                    }
+                    else
+                    {
+                        FilePathToListView.RemoveAt(0);
+                        FilePathToListView.Add(SDriveCompanyPath);
+                    }
                 }
                 else
                 {
-                    FilePathToListView.RemoveAt(0);
-                    FilePathToListView.Add(SDriveCompanyPath);
+                    MessageBox.Show("No folder selected!", "AutoCAD", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             else
             {
-                MessageBox.Show("No folder selected!", "AutoCAD", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Process.Start(SDriveCompanyPath);
             }
+            
         }
         private void PushFileToSDrive()
         {
@@ -577,112 +603,7 @@ namespace ChangeFileName.ViewModels
                 //UtilMethod.WarningMessageBox("Saved current folder successfully!", "AutoCAD");
             }
         }
-        private void CreateNewTextStyle()
-        {
-            Document doc = UtilMethod.AcadDoc();
-            Database db = UtilMethod.AcadDb();
-
-            try
-            {
-                using (var trans = db.TransactionManager.StartTransaction())
-                {
-                    doc.LockDocument();
-                    SymbolTable st = (SymbolTable)trans.GetObject(db.TextStyleTableId, OpenMode.ForRead);
-
-                    //Check text style isExisting
-                    if (st.Has(TextStyleName))
-                    {
-                        //UtilMethod.WarningMessageBox($"Text style {TextStyleName} is existing already!", "AutoCAD");
-                        StatusCreateTextStyle = TextStyleFail;
-                        return;
-                    }
-                    ObjectId style16ID = st["16"];
-                    TextStyleTableRecord style16 = (TextStyleTableRecord)trans.GetObject(style16ID, OpenMode.ForRead);
-
-                    //Create new text style base on style 16
-                    TextStyleTableRecord newStyle = new TextStyleTableRecord();
-                    newStyle.Name = TextStyleName;
-
-                    int textStyleNum = Convert.ToInt32(newStyle.Name);
-
-                    //Clone properties of Style 16
-                    newStyle.FileName = style16.FileName;
-                    newStyle.BigFontFileName = style16.BigFontFileName;
-                    newStyle.FlagBits = style16.FlagBits;
-                    newStyle.ObliquingAngle = style16.ObliquingAngle;
-                    newStyle.TextSize = 1 * ((double)textStyleNum / originalNumber);
-
-                    //Add new text style to drawing
-                    st.UpgradeOpen();
-                    ObjectId newTextStyleID = st.Add(newStyle);
-                    trans.AddNewlyCreatedDBObject(newStyle, true);
-                    trans.Commit();
-                    //UtilMethod.WarningMessageBox($"Text style {TextStyleName} was created successfully!", "AutoCAD");
-                    StatusCreateTextStyle = TextStyleDone;
-                    db.Textstyle = newStyle.ObjectId;
-                }
-            }
-            catch (Exception ex)
-            {
-                //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}","Error");
-                StatusCreateTextStyle = TextStyleFail;
-                return;
-            }
-        }
-        private void CreateNewDimStyle()
-        {
-            Document doc = UtilMethod.AcadDoc();
-            Database db = UtilMethod.AcadDb();
-
-            try
-            {
-                using (var trans = db.TransactionManager.StartTransaction())
-                {
-                    doc.LockDocument();
-                    // Open the DimStyle table for read
-                    DimStyleTable dst = (DimStyleTable)trans.GetObject(db.DimStyleTableId, OpenMode.ForRead);
-                    string strDimStyleName = "Scale " + TextStyleName;
-
-                    DimStyleTableRecord acDimStyleTblRec;
-                    ObjectId dimStyleID16 = dst["Scale 16"];
-                    DimStyleTableRecord dimStyle16 = (DimStyleTableRecord)trans.GetObject(dimStyleID16, OpenMode.ForRead);
-
-                    // Check to see if the dimension style exists or not
-                    if (dst.Has(strDimStyleName) == false)
-                    {
-                        if (dst.IsWriteEnabled == false) trans.GetObject(db.DimStyleTableId, OpenMode.ForWrite);
-
-                        acDimStyleTblRec = new DimStyleTableRecord();
-                        acDimStyleTblRec.Name = strDimStyleName;
-
-                        dst.Add(acDimStyleTblRec);
-                        trans.AddNewlyCreatedDBObject(acDimStyleTblRec, true);
-                    }
-                    else
-                    {
-                        //acDimStyleTblRec = trans.GetObject(dst[strDimStyleName], OpenMode.ForWrite) as DimStyleTableRecord;
-                        StatusCreateDimStyle = DimStyleFail;
-                        return;
-                    }
-                    acDimStyleTblRec.CopyFrom(dimStyle16);
-                    acDimStyleTblRec.Name = strDimStyleName;
-                    int textStyleNum = Convert.ToInt32(TextStyleName);
-                    acDimStyleTblRec.Dimscale = textStyleNum;
-                    dimStyle16.Dispose();
-                    trans.Commit();
-                    //UtilMethod.WarningMessageBox("Done", "AutoCAD");
-                    StatusCreateDimStyle = DimStyleDone;
-                    db.Dimstyle = acDimStyleTblRec.ObjectId;
-                }
-            }
-            catch (Exception ex)
-            {
-                //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
-                StatusCreateDimStyle = DimStyleFail;
-                return;
-            }
-        }   
-        private void CreateNewMultileader()
+        private void CreateNewMultileaderNotinUse()
         {
             Document doc = UtilMethod.AcadDoc();
             Database db = UtilMethod.AcadDb();
@@ -732,6 +653,7 @@ namespace ChangeFileName.ViewModels
                     mlSTable.UpgradeOpen();
                     trans.AddNewlyCreatedDBObject(newMleaderStyle, true);
                     mleaderStyleId = mlSTable.GetAt(TextStyleName);
+                    db.MLeaderstyle = mleaderStyleId;
                     trans.Commit();
                     MessageBox.Show("Create multileader!", "AutoCAD Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
@@ -744,59 +666,325 @@ namespace ChangeFileName.ViewModels
             }
 
         }
-        private void CreateScaleViewport()
+        private void CreateMleader()
         {
             Document doc = UtilMethod.AcadDoc();
             Database db = UtilMethod.AcadDb();
             double textStyleNum = Convert.ToInt32(TextStyleName);
             try
             {
-                ObjectContextManager contextManager = db.ObjectContextManager;
-                if (contextManager != null)
+                using (var trans = db.TransactionManager.StartTransaction())
                 {
-                    // now get the Annotation Scaling context collection
-                    // (named ACDB_ANNOTATIONSCALES_COLLECTION)                   
-                    ObjectContextCollection contextCollection = contextManager.GetContextCollection("ACDB_ANNOTATIONSCALES");
-                    // if ok                   
-                    if (contextCollection != null)
-                    {
-                        // create a brand new scale context
-                        double numberA = textStyleNum / 12;
-                        if (!contextCollection.HasContext($"Scale {textStyleNum}"))
-                        {
-                            AnnotationScale annotationScale = new AnnotationScale();
-                            annotationScale.Name = $"Scale {textStyleNum}";
-                            annotationScale.PaperUnits = 1 / numberA;
-                            annotationScale.DrawingUnits = 12;
-                            // now add to the drawing's context collection                       
-                            contextCollection.AddContext(annotationScale);
-                            //MessageBox.Show("Create viewport successfully!", "AutoCAD Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                            StatusCreateScaleVP = ScaleViewPortDone;
-                            return;
-                        }
-                        else
-                        {
-                            StatusCreateScaleVP = ScaleViewPortFail;
-                        }
 
+                    ObjectId mlSTableId = db.MLeaderStyleDictionaryId;
+                    DBDictionary mlSTable = (DBDictionary)trans.GetObject(mlSTableId, OpenMode.ForRead);
+
+                    if (mlSTable.Contains(TextStyleName))
+                    {
+                        MessageBox.Show("Create multileader fail!", "AutoCAD Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        return;
                     }
+                    ObjectId standardMLeaderStyleId = (ObjectId)mlSTable["16"];
+                    MLeaderStyle standardMLeaderStyle = (MLeaderStyle)trans.GetObject(standardMLeaderStyleId, OpenMode.ForRead);
+                    //add a new mleader style...
+                    MLeaderStyle newMleaderStyle = new MLeaderStyle();
+                    newMleaderStyle.Name = TextStyleName;
+                    newMleaderStyle.ArrowSize = 1.25 * (textStyleNum / 16);
+                    newMleaderStyle.BreakSize = 11 / 16 * (textStyleNum / 16);
+                    newMleaderStyle.DoglegLength = 2 * textStyleNum / 16;
+
+                    ObjectId textStyleTableId = db.TextStyleTableId;
+                    TextStyleTable textStyleTable = (TextStyleTable)trans.GetObject(textStyleTableId, OpenMode.ForRead);
+                    ObjectId textStyleID = textStyleTable[TextStyleName];
+                    newMleaderStyle.TextStyleId = textStyleID;
+
+                    newMleaderStyle.LandingGap = 1 / 2 * (textStyleNum / 16);
+
+
+
+
+                    //newMleaderStyle.ContentType = standardMLeaderStyle.ContentType;
+                    //newMleaderStyle.ContentType = standardMLeaderStyle.ContentType;
+                    //newMleaderStyle.EnableDogleg = standardMLeaderStyle.EnableDogleg;
+                    //newMleaderStyle.LeaderLineColor = standardMLeaderStyle.LeaderLineColor;
+                    //newMleaderStyle.LeaderLineTypeId = standardMLeaderStyle.LeaderLineTypeId;
+                    //newMleaderStyle.LeaderLineWeight = standardMLeaderStyle.LeaderLineWeight;
+                    //newMleaderStyle.LeaderLineType = standardMLeaderStyle.LeaderLineType;
+                    //newMleaderStyle.TextAlignmentType = standardMLeaderStyle.TextAlignmentType;
+                    //newMleaderStyle.TextColor = standardMLeaderStyle.TextColor;
+                    //newMleaderStyle.Scale = standardMLeaderStyle.Scale;                            
+                    //newMleaderStyle.MaxLeaderSegmentsPoints = 5;       
+                    //newMleaderStyle.ArrowSymbolId = standardMLeaderStyle.ArrowSymbolId;                  
+                    //newMleaderStyle.ContentType = standardMLeaderStyle.ContentType;
+
+                    ObjectId mleaderStyleId = newMleaderStyle.PostMLeaderStyleToDb(db, TextStyleName);
+                    mlSTable.UpgradeOpen();
+                    trans.AddNewlyCreatedDBObject(newMleaderStyle, true);
+                    mleaderStyleId = mlSTable.GetAt(TextStyleName);
+                    trans.Commit();
+                    MessageBox.Show("Create multileader done!", "AutoCAD Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
                 }
             }
             catch (Exception ex)
             {
-                //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
-                StatusCreateScaleVP = ScaleViewPortFail;
+                UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
                 return;
             }
         }
-        private void CreateAlls()
+        //------------
+        private Task CreateNewTextStyle()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+
+            return Task.Run(() =>
+            {
+                try
+                {
+                    using (var trans = db.TransactionManager.StartTransaction())
+                    {
+                        doc.LockDocument();
+                        SymbolTable st = (SymbolTable)trans.GetObject(db.TextStyleTableId, OpenMode.ForRead);
+
+                        ObjectId style16ID = st["16"];
+                        TextStyleTableRecord style16 = (TextStyleTableRecord)trans.GetObject(style16ID, OpenMode.ForRead);
+
+                        //Create new text style base on style 16
+                        TextStyleTableRecord newStyle = new TextStyleTableRecord();
+                        newStyle.Name = TextStyleName;
+
+                        int textStyleNum = Convert.ToInt32(newStyle.Name);
+
+                        //Clone properties of Style 16
+                        newStyle.FileName = style16.FileName;
+                        newStyle.BigFontFileName = style16.BigFontFileName;
+                        newStyle.FlagBits = style16.FlagBits;
+                        newStyle.ObliquingAngle = style16.ObliquingAngle;
+                        newStyle.TextSize = 1 * ((double)textStyleNum / originalNumber);
+
+                        //Add new text style to drawing
+                        st.UpgradeOpen();
+                        ObjectId newTextStyleID = st.Add(newStyle);
+                        trans.AddNewlyCreatedDBObject(newStyle, true);
+                        trans.Commit();
+                        //UtilMethod.WarningMessageBox($"Text style {TextStyleName} was created successfully!", "AutoCAD");
+                        Task.Delay(1000).Wait();
+                        StatusCreateTextStyle = TextStyleDone;
+                        db.Textstyle = newStyle.ObjectId;
+                    }
+                    
+                }
+                catch (Exception ex)
+                {
+                    //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}","Error");
+                    StatusCreateTextStyle = TextStyleFail;
+                    return;
+                }
+            });
+        }
+        private Task CreateNewDimStyle()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+
+            return Task.Run(() =>
+            {
+                try
+                {
+                    using (var trans = db.TransactionManager.StartTransaction())
+                    {
+                        doc.LockDocument();
+                        // Open the DimStyle table for read
+                        DimStyleTable dst = (DimStyleTable)trans.GetObject(db.DimStyleTableId, OpenMode.ForRead);
+                        string strDimStyleName = "Scale " + TextStyleName;
+
+                        DimStyleTableRecord acDimStyleTblRec;
+                        ObjectId dimStyleID16 = dst["Scale 16"];
+                        DimStyleTableRecord dimStyle16 = (DimStyleTableRecord)trans.GetObject(dimStyleID16, OpenMode.ForRead);
+
+                        // Check to see if the dimension style exists or not
+                        if (dst.Has(strDimStyleName) == false)
+                        {
+                            if (dst.IsWriteEnabled == false) trans.GetObject(db.DimStyleTableId, OpenMode.ForWrite);
+
+                            acDimStyleTblRec = new DimStyleTableRecord();
+                            acDimStyleTblRec.Name = strDimStyleName;
+
+                            dst.Add(acDimStyleTblRec);
+                            trans.AddNewlyCreatedDBObject(acDimStyleTblRec, true);
+
+
+                            acDimStyleTblRec.CopyFrom(dimStyle16);
+                            acDimStyleTblRec.Name = strDimStyleName;
+                            int textStyleNum = Convert.ToInt32(TextStyleName);
+                            acDimStyleTblRec.Dimscale = textStyleNum;
+                            dimStyle16.Dispose();
+                            trans.Commit();
+                            Task.Delay(1000).Wait();
+                            StatusCreateDimStyle = DimStyleDone;
+                            db.Dimstyle = acDimStyleTblRec.ObjectId;
+                            acDimStyleTblRec.UpgradeOpen();
+                            trans.Commit();
+                        }
+                        else
+                        {
+                            StatusCreateDimStyle = DimStyleFail;
+                            return;
+                        }
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
+                    StatusCreateDimStyle = DimStyleFail;
+                    return;
+                }
+            });
+        }
+        private Task CreateMleaderStyle()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+            //string mleaderName = TextStyleName;
+            double textStyleNum = Convert.ToInt32(TextStyleName);
+            return Task.Run(() =>
+            {
+                try
+                {
+                    using (var trans = db.TransactionManager.StartTransaction())
+                    {
+                        ObjectId mlStyleId;
+                        DBDictionary mlStyles = (DBDictionary)trans.GetObject(db.MLeaderStyleDictionaryId, OpenMode.ForRead);
+                        if (mlStyles.Contains(TextStyleName))
+                        {
+                            mlStyleId = mlStyles.GetAt(TextStyleName);
+                        }
+                        else
+                        {
+                            MLeaderStyle dst = new MLeaderStyle();
+                            dst.ArrowSymbolId = ObjectId.Null;
+                            dst.ArrowSize = 1.25 * (textStyleNum / 16);
+                            dst.LandingGap = 1.0 / 2 * (textStyleNum / 16);
+                            dst.EnableBlockRotation = true;
+                            dst.MaxLeaderSegmentsPoints = 2;
+                            dst.BreakSize = 11.0 / 16 * (textStyleNum / 16);
+                            dst.DoglegLength = 2.0 * textStyleNum / 16;
+                            //dst.EnableLanding = true;
+                            dst.TextAttachmentType = TextAttachmentType.AttachmentMiddleOfTop;
+                            ObjectId textStyleTableId = db.TextStyleTableId;
+                            TextStyleTable textStyleTable = (TextStyleTable)trans.GetObject(textStyleTableId, OpenMode.ForRead);
+                            ObjectId textStyleID = textStyleTable[TextStyleName];
+                            dst.TextStyleId = textStyleID;
+                            mlStyles.UpgradeOpen();
+                            mlStyleId = dst.PostMLeaderStyleToDb(db, TextStyleName);
+                            trans.AddNewlyCreatedDBObject(dst, true);
+                            Task.Delay(1000).Wait();
+                        }
+                        trans.Commit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
+                    return;
+                }
+            });
+
+        }
+        private Task CreateScaleViewport()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+            double textStyleNum = Convert.ToInt32(TextStyleName);
+            return Task.Run(() =>
+            {
+                try
+                {
+                    ObjectContextManager contextManager = db.ObjectContextManager;
+                    if (contextManager != null)
+                    {
+                        // now get the Annotation Scaling context collection
+                        // (named ACDB_ANNOTATIONSCALES_COLLECTION)                   
+                        ObjectContextCollection contextCollection = contextManager.GetContextCollection("ACDB_ANNOTATIONSCALES");
+                        // if ok                   
+                        if (contextCollection != null)
+                        {
+                            // create a brand new scale context
+                            double numberA = textStyleNum / 12;
+                            if (!contextCollection.HasContext($"Scale {textStyleNum}"))
+                            {
+                                AnnotationScale annotationScale = new AnnotationScale();
+                                annotationScale.Name = $"Scale {textStyleNum}";
+                                annotationScale.PaperUnits = 1 / numberA;
+                                annotationScale.DrawingUnits = 12;
+                                // now add to the drawing's context collection                       
+                                contextCollection.AddContext(annotationScale);
+                                //MessageBox.Show("Create viewport successfully!", "AutoCAD Warning", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                Task.Delay(1000).Wait();
+                                StatusCreateScaleVP = _scaleViewPortDone;
+                                return;
+                            }
+                            else
+                            {
+                                StatusCreateScaleVP = _scaleViewPortFail;
+                            }
+
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //UtilMethod.WarningMessageBox($"An error occurs: {ex.Message}", "Error");
+                    StatusCreateScaleVP = ScaleViewPortFail;
+                    return;
+                }
+            });
+        }
+        private bool isExistingTextStyle()
+        {
+            Document doc = UtilMethod.AcadDoc();
+            Database db = UtilMethod.AcadDb();
+
+            using (var trans = db.TransactionManager.StartTransaction())
+            {
+                doc.LockDocument();
+                SymbolTable st = (SymbolTable)trans.GetObject(db.TextStyleTableId, OpenMode.ForRead);
+
+                //Check text style isExisting
+                if (st.Has(TextStyleName))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        private async Task CreateAlls()
         {
             if (TextStyleName != "" && !string.IsNullOrEmpty(TextStyleName))
             {
-                CreateNewTextStyle();
-                CreateNewDimStyle();
-                //CreateNewMultileader();
-                CreateScaleViewport();
+                if (isExistingTextStyle() == true)
+                {
+                    CreationStatus = $"Starting create Text Style '{TextStyleName}'...";
+                    await CreateNewTextStyle();
+                    CreationStatus = $"Created Text Style '{TextStyleName}'. Starting create DimStyle...";
+                    await CreateNewDimStyle();
+                    CreationStatus = $"Created Dim Style '{TextStyleName}'. Starting create Callout...";
+                    await CreateMleaderStyle();
+                    CreationStatus = $"Created Callout Style '{TextStyleName}'. Starting create ScaleViewport...";
+                    await CreateScaleViewport();
+                    CreationStatus = "Create completed!";
+                }
+                else
+                {
+                    UtilMethod.WarningMessageBox($"Style {TextStyleName} is existing already!", "Warning");
+                    StatusCreateTextStyle = "None!";
+                    StatusCreateDimStyle = "None!";
+                    StatusCreateScaleVP = "None!";
+                    CreationStatus = $"Style {TextStyleName} is existing already!";
+                }
+
             }
             else
             {
@@ -858,7 +1046,7 @@ namespace ChangeFileName.ViewModels
                                         else
                                         {
                                             ed.WriteMessage($"\nĐã bỏ qua block '{BlockNameTest}' vì file '{saveFilePath}' đã tồn tại.");
-                                        } 
+                                        }
                                     }
                                 }
                             }
@@ -872,7 +1060,7 @@ namespace ChangeFileName.ViewModels
                 {
                     ed.WriteMessage("Bug log: " + ex.Message.ToString());
                 }
-                
+
             }
         }
         private void ExtractBlockToFile(ObjectId blockDefId, string destinationFilePath, string blockName)
@@ -918,7 +1106,7 @@ namespace ChangeFileName.ViewModels
                     {
                         // Thêm BlockReference vào Model Space
                         ms.AppendEntity(blkRef);
-                        tr.AddNewlyCreatedDBObject(blkRef, true);                       
+                        tr.AddNewlyCreatedDBObject(blkRef, true);
                         //ZoomWin(new Point3d(), new Point3d(), new Point3d(), 1.01075);
                         tr.Commit();
                         ed.WriteMessage($"\nĐã chèn block '{blockName}' tại tọa độ (0,0,0).");
@@ -985,7 +1173,7 @@ namespace ChangeFileName.ViewModels
             {
                 UtilMethod.WarningMessageBox($"Error {ex.Message}", "Error");
                 return;
-            }          
+            }
         }
         private void SeletedDetail()
         {

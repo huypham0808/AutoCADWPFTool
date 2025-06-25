@@ -9,14 +9,17 @@
         FontSize="16"
         Height="543"
         Width="650"
-        Title="Utilities tool - Huy Pham"
-        ResizeMode="NoResize"
+        MinWidth="650"
+        MinHeight="200"
+        Title="CSS_Utilities tool"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen"
         d:DesignHeight="543"
         d:DesignWidth="650"
         VerticalAlignment="Stretch"
         SizeToContent="Height"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Loaded="Window_Loaded">
     <Window.Resources>
         <local1:UpperCaseConverter x:Key="UpperCaseConverter" />
         <Style TargetType="Button">
@@ -229,13 +232,7 @@
                                                Foreground="Blue"
                                                BorderBrush="SlateGray"
                                                BorderThickness="1" />
-                                        <Button Grid.Row="3"
-                                                Grid.Column="0"
-                                                Width="100"
-                                                Height="40"
-                                                HorizontalAlignment="Right"
-                                                Content="Get current"            
-                                                Command="{Binding GetCurrentLocalFileDwgCommand}" />
+
                                         <Label Grid.Row="2"
                                                Grid.Column="0"
                                                Grid.ColumnSpan="3"
@@ -245,19 +242,29 @@
                                                Foreground="Blue"
                                                BorderBrush="SlateGray"
                                                BorderThickness="1" />
-                                        <Button Grid.Row="3"
-                                                Grid.Column="1"
-                                                Width="100"
-                                                Margin="0 0 5 0"
-                                                Content="Browse"                                                                               
-                                                HorizontalAlignment="Right"
-                                                Command="{Binding GetSDriveProjectFolderCommand}" />
-                                        <Button Grid.Row="3"
-                                                Grid.Column="2"
-                                                Width="100"
-                                                Height="40"
-                                                Content="Push"
-                                                Command="{Binding PushFileToSDriveCommand}" />
+                                        <DockPanel Grid.Row="3"
+                                                   Grid.ColumnSpan="3"
+                                                   Grid.Column="0"
+                                                   HorizontalAlignment="Right">
+                                            <Button Grid.Column="0"
+                                                    Width="100"
+                                                    Height="40"
+                                                    HorizontalAlignment="Right"
+                                                    Content="Get current"
+                                                    Command="{Binding GetCurrentLocalFileDwgCommand}" />
+                                            <Button Grid.Row="3"
+                                                    Grid.Column="1"
+                                                    Width="100"
+                                                    Margin="7 0 7 0"
+                                                    Content="Browse"
+                                                    HorizontalAlignment="Right"
+                                                    Command="{Binding GetSDriveProjectFolderCommand}" />
+                                            <Button Width="100"
+                                                    Height="40"
+                                                    Content="Push"
+                                                    Command="{Binding PushFileToSDriveCommand}" />
+                                        </DockPanel>
+
                                         <Expander Grid.Row="4"
                                                   Margin="0 10 0 0"
                                                   Grid.Column="0"
@@ -311,13 +318,16 @@
                                      Margin="0 20 0 0"
                                      TextChanged="TextBox_TextChanged"
                                      x:Name="txtStyleName" />
-                            <Button Grid.Row="0"
-                                    Grid.Column="2"
-                                    Content="Create"
-                                    Width="100"
-                                    Height="35"
-                                    Command="{Binding CreatAllCommands}"
-                                    Margin="-90 20 0 0" />
+                            <DockPanel Grid.Row="0"
+                                       Grid.Column="2"
+                                       HorizontalAlignment="Left">
+                                <Button Content="Create"
+                                        Width="100"
+                                        Height="35"
+                                        Command="{Binding CreateAllStyleCommand}"
+                                        Margin="50 20 0 0" />
+                            </DockPanel>
+
                             <StackPanel Grid.Row="1"
                                         Grid.Column="0"
                                         Grid.ColumnSpan="3"
@@ -336,20 +346,27 @@
 
                         </Grid>
                     </Border>
-                    <StackPanel Grid.Row="1">
-                        <Label Content="{Binding StatusCreateTextStyle}"
-                               Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        <Label Content="{Binding StatusCreateDimStyle}"
-                               Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                        <Label Content="New Multileader style was created successfully!"
-                               Visibility="Collapsed" />
-                        <Label Content="{Binding StatusCreateScaleVP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                               Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                    </StackPanel>
+                    <Expander Header="Details"
+                              Foreground="Black"
+                              Grid.Row="1" IsExpanded ="True">
+                        <Grid>
+                            <StackPanel Background="DarkBlue">
+                                <Label Content="{Binding CreationStatus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                       Foreground="{Binding ColorTextOriginal}"/>
+                                <!--<Label Content="{Binding StatusCreateTextStyle}"
+                                       Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                <Label Content="{Binding StatusCreateDimStyle}"
+                                       Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
+                                <!--<Label Content="{Binding StatusCreateScaleVP, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                       Foreground="{Binding ColorTextOriginal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />-->
+                            </StackPanel>
+                        </Grid>
+                    </Expander>
                 </Grid>
             </Border>
         </TabItem>
-        <TabItem Header="Extract Block">
+        <TabItem Header="Extract Block"
+                 Visibility="Collapsed">
             <Border Padding="10">
                 <Grid>
                     <Grid.RowDefinitions>
